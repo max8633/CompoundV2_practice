@@ -32,7 +32,7 @@ contract MyScript is Script {
 
         //proxy delegatecall to set address of comptroller
         Unitroller._setPendingImplementation(address(Comptroller));
-        Unitroller._acceptImplementation();
+        Comptroller._become(Unitroller);
         //Interest rate model
         WhitePaperInterestRateModel WhitePaperInterestRateModel = new WhitePaperInterestRateModel(
                 0,
@@ -44,7 +44,7 @@ contract MyScript is Script {
         //proxy CErc20
         CErc20Delegator CErc20Delegator = new CErc20Delegator(
             address(UnderlyingERC20Token),
-            Comptroller,
+            Unitroller,
             WhitePaperInterestRateModel,
             1e18,
             "cToken of Underlying ERC20 Token",
