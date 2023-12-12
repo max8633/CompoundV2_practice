@@ -1,19 +1,19 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.13;
 
-import {MyScript} from "../script/CompoundV2.s.sol";
-import {Test} from "../lib/forge-std/src/Test.sol";
-import {Script, console2} from "../lib/forge-std/src/Script.sol";
-import {CompoundV2SetUp} from "../test/helper/CompoundV2SetUp.sol";
-import {IPool} from "../lib/aave-v3-core/contracts/interfaces/IPool.sol";
+import {MyScript} from "script/CompoundV2.s.sol";
+import {Test} from "lib/forge-std/src/Test.sol";
+import {Script, console2} from "lib/forge-std/src/Script.sol";
+import {CompoundV2SetUp} from "test/helper/CompoundV2SetUp.sol";
+import {AaveFlashLoan} from "src/AaveFlashLoan.sol";
 
 contract FlashLoanTest is MyScript, Test, CompoundV2SetUp {
     uint256 mainnetFork;
-    IPool public constant Pool =
-        IPool(0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2);
+    AaveFlashLoan aaveFlashLoan;
 
     function setUp() public override {
         super.setUp();
+        aaveFlashLoan = new aaveFlashLoan();
 
         mainnetFork = vm.createFork(
             "https://mainnet.infura.io/v3/d5aad10125ce4463972de51361f5e5de"
@@ -44,5 +44,14 @@ contract FlashLoanTest is MyScript, Test, CompoundV2SetUp {
         vm.stopPrank();
 
         vm.startPrank(user2);
+        aaveFlashLoan.flashLoanThenLiquidate(
+            address(tokenA),
+            address(tokenB),
+            user1,
+            cTokenB.borrowBalanceStored(user1)
+        );
+
+        uint256 liquidatorGetAmount = tokenA.balanceOf(address(aaveFlashLoan));
+        console2.log(liquidatorGetAmount);
     }
 }

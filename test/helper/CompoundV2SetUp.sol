@@ -41,7 +41,7 @@ contract CompoundV2SetUp is MyScript, Test {
         CErc20Delegate_ = new CErc20Delegate();
         //proxy CErc20
         cTokenA = new CErc20Delegator(
-            address(throwokenA),
+            address(tokenA),
             ComptrollerInterface(address(Unitroller_)),
             WhitePaperInterestRateModel_,
             1e18,
