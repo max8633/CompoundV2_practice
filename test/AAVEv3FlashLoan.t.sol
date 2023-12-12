@@ -5,9 +5,12 @@ import {MyScript} from "../script/CompoundV2.s.sol";
 import {Test} from "../lib/forge-std/src/Test.sol";
 import {Script, console2} from "../lib/forge-std/src/Script.sol";
 import {CompoundV2SetUp} from "../test/helper/CompoundV2SetUp.sol";
+import {IPool} from "../lib/aave-v3-core/contracts/interfaces/IPool.sol";
 
 contract FlashLoanTest is MyScript, Test, CompoundV2SetUp {
     uint256 mainnetFork;
+    IPool public constant Pool =
+        IPool(0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2);
 
     function setUp() public override {
         super.setUp();
