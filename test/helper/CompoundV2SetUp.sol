@@ -14,7 +14,7 @@ import "../../lib/compound-protocol/contracts/SimplePriceOracle.sol";
 import "../../lib/openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 import {ERC20Token} from "../../src/ERC20Token.sol";
 
-contract CompoundV2SetUp is MyScript, Test {
+contract CompoundV2SetUp is Test {
     address public admin = makeAddr("admin");
     address public user1 = makeAddr("user1");
     address public user2 = makeAddr("user2");
@@ -22,7 +22,25 @@ contract CompoundV2SetUp is MyScript, Test {
     ERC20 public tokenA = ERC20(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
     ERC20 public tokenB = ERC20(0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984);
 
+    SimplePriceOracle SimplePriceOracle_;
+    Comptroller Comptroller_;
+    Unitroller Unitroller_;
+    ComptrollerG7 ComptrollerProxy_;
+    WhitePaperInterestRateModel WhitePaperInterestRateModel_;
+    CErc20Delegate CErc20Delegate_;
+    CErc20Delegator cTokenA;
+    CErc20Delegator cTokenB;
+
     function setUp() public virtual {
+        uint mainnetFork = vm.createFork(
+            "https://mainnet.infura.io/v3/d5aad10125ce4463972de51361f5e5de"
+        );
+
+        vm.selectFork(mainnetFork);
+        vm.rollFork(17_465_000);
+
+        vm.startPrank(admin);
+
         //oracle
         SimplePriceOracle_ = new SimplePriceOracle();
         //impl comptroller
@@ -71,13 +89,21 @@ contract CompoundV2SetUp is MyScript, Test {
         //set price oracle
         ComptrollerProxy_._setPriceOracle(SimplePriceOracle_);
         //set cTokenA and cTokenB price
-        SimplePriceOracle_.setUnderlyingPrice(CToken(address(cTokenA)), 1e18);
-        SimplePriceOracle_.setUnderlyingPrice(CToken(address(cTokenB)), 5e18);
+        SimplePriceOracle_.setUnderlyingPrice(
+            CToken(address(cTokenA)),
+            1 * 10 ** (36 - tokenA.decimals())
+        );
+        SimplePriceOracle_.setUnderlyingPrice(
+            CToken(address(cTokenB)),
+            5 * 10 ** (36 - tokenB.decimals())
+        );
         //set cTokenB collateral factor
         ComptrollerProxy_._setCollateralFactor(CToken(address(cTokenB)), 5e17);
         //set close factor
         ComptrollerProxy_._setCloseFactor(5e17);
         //set liquidation incentive
         ComptrollerProxy_._setLiquidationIncentive(1.08 * 1e18);
+
+        vm.stopPrank();
     }
 }
